@@ -55,12 +55,15 @@ public class AdjacencyTest {
     }
 
     @Test
-    public void testNonAdjacencyDifferentScale() throws Exception {
-        //neighboring blocks at different scales are not considered adjacent
+    public void testAdjacencyDifferentScale() throws Exception {
+        //neighboring blocks at different scales are considered adjacent,
+        //unless one is contained within the other
         OpenGeoTile neighborBlockDifferentSize1 = new OpenGeoTile("8CRW2W8X");
         OpenGeoTile neighborBlockDifferentSize2 = new OpenGeoTile("8CRX");
-        Assert.assertFalse(originalBlock.isNeighbor(neighborBlockDifferentSize1));
-        Assert.assertFalse(originalBlock.isNeighbor(neighborBlockDifferentSize2));
+        OpenGeoTile containingBlock = new OpenGeoTile("8CRW");
+        Assert.assertTrue(originalBlock.isNeighbor(neighborBlockDifferentSize1));
+        Assert.assertTrue(originalBlock.isNeighbor(neighborBlockDifferentSize2));
+        Assert.assertFalse(originalBlock.isNeighbor(containingBlock));
     }
 
     @Test

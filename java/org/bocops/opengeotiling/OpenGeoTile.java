@@ -332,6 +332,11 @@ public class OpenGeoTile {
      */
     public boolean isNeighbor(OpenGeoTile potentialNeighbor) {
         if (potentialNeighbor.getTileSize() == mTileSize) {
+            //avoid iterating over neighbors for same tile
+            if (potentialNeighbor.isSameTile(this)) {
+                return false;
+            }
+
             OpenGeoTile[] neighbors = getNeighbors();
             for (OpenGeoTile n : neighbors) {
                 if (potentialNeighbor.isSameTile(n)) {
@@ -340,30 +345,30 @@ public class OpenGeoTile {
             }
             return false;
         } else {
-            //tiles of different size are adjacent if at least one neighbor of the smaller tile
-            //is contained within the bigger tile
-            if (potentialNeighbor.getTileSize().getCodeLength()<mTileSize.getCodeLength()) {
-                //the other tile is smaller
-                OpenGeoTile[] neighbors = potentialNeighbor.getNeighbors();
-                for (OpenGeoTile n : neighbors) {
-                    if (contains(n)) {
-                        return true;
-                    }
-                }
-                return false;
+            //tiles of different size are adjacent if at least one neighbor of the smaller tile,
+            //but not the smaller tile itself, is contained within the bigger tile
+            OpenGeoTile smallerTile;
+            OpenGeoTile biggerTile;
+            if (potentialNeighbor.getTileSize().getCodeLength()>mTileSize.getCodeLength()) {
+                smallerTile = potentialNeighbor;
+                biggerTile = this;
             } else {
-                //this tile is smaller
-                OpenGeoTile[] neighbors = getNeighbors();
-                for (OpenGeoTile n : neighbors) {
-                    if (potentialNeighbor.contains(n)) {
-                        return true;
-                    }
-                }
+                smallerTile = this;
+                biggerTile = potentialNeighbor;
+            }
+
+            if (biggerTile.contains(smallerTile)) {
                 return false;
             }
+
+            OpenGeoTile[] neighbors = smallerTile.getNeighbors();
+            for (OpenGeoTile n : neighbors) {
+                if (biggerTile.contains(n)) {
+                    return true;
+                }
+            }
+            return false;
         }
-
-
     }
 
     /**
