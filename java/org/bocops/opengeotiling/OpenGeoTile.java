@@ -39,38 +39,44 @@ public class OpenGeoTile {
         /**
          * An area of 20° x 20°. The side length of this tile varies with its location on the globe,
          * but can be up to approximately 2200km. Tile addresses will be 2 characters long.*/
-        GLOBAL(2),
+        GLOBAL(2,20.0),
 
         /**
          * An area of 1° x 1°. The side length of this tile varies with its location on the globe,
          * but can be up to approximately 110km. Tile addresses will be 4 characters long.*/
-        REGION(4),
+        REGION(4,1.0),
 
         /**
          * An area of 0.05° x 0.05°. The side length of this tile varies with its location on the
          * globe, but can be up to approximately 5.5km. Tile addresses will be 6 characters long.*/
-        DISTRICT(6),
+        DISTRICT(6,0.05),
 
         /**
          * An area of 0.0025° x 0.0025°. The side length of this tile varies with its location on
          * the globe, but can be up to approximately 275m.
          * Tile addresses will be 8 characters long.*/
-        NEIGHBORHOOD(8),
+        NEIGHBORHOOD(8,0.0025),
 
         /**
          * An area of 0.000125° x 0.000125°. The side length of this tile varies with its location
          * on the globe, but can be up to approximately 14m.
          * Tile addresses will be 10 characters long.*/
-        PINPOINT(10);
+        PINPOINT(10,0.000125);
 
         private final int mCodeLength;
+        private final double mCoordinateIncrement;
 
-        TileSize(int codeLength) {
+        TileSize(int codeLength, double coordinateIncrement) {
             mCodeLength = codeLength;
+            mCoordinateIncrement = coordinateIncrement;
         }
 
         public final int getCodeLength() {
             return mCodeLength;
+        }
+
+        public final double getCoordinateIncrement() {
+            return mCoordinateIncrement;
         }
     }
 
@@ -433,7 +439,7 @@ public class OpenGeoTile {
     }
 
 
-    private static int characterDistance(char c1, char c2) throws IllegalArgumentException {
+    private static int getCharacterIndex(char c) throws IllegalArgumentException {
         //following definitions copied from OpenLocationCode.java
         final char[] ALPHABET = "23456789CFGHJMPQRVWX".toCharArray();
         final Map<Character, Integer> CHARACTER_TO_INDEX = new HashMap<>();
@@ -446,11 +452,15 @@ public class OpenGeoTile {
         }
         //end copy from OpenLocationCode.java
 
-        if (!(CHARACTER_TO_INDEX.containsKey(c1)&&CHARACTER_TO_INDEX.containsKey(c2))) {
+        if (!(CHARACTER_TO_INDEX.containsKey(c))) {
             throw new IllegalArgumentException("Character does not exist in alphabet");
         }
 
-        return CHARACTER_TO_INDEX.get(c1) - CHARACTER_TO_INDEX.get(c2);
+        return CHARACTER_TO_INDEX.get(c);
+    }
+
+    private static int characterDistance(char c1, char c2) throws IllegalArgumentException {
+        return getCharacterIndex(c1) - getCharacterIndex(c2);
     }
 
     private int getLatitudinalTileDistance(OpenGeoTile otherTile, boolean absolute)
