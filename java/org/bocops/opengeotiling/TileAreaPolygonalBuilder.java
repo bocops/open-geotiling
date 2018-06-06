@@ -30,6 +30,8 @@ public class TileAreaPolygonalBuilder {
 
     //internal state, updated by set* methods
     private OpenGeoTile.TileSize precision = OpenGeoTile.TileSize.DISTRICT;
+    private OpenGeoTile.TileSize maximumTileSize = null;
+
     private ArrayList<Coordinate> coordinates = null;
     private Coordinate bboxMin, bboxMax;
 
@@ -38,12 +40,24 @@ public class TileAreaPolygonalBuilder {
     }
 
     /**
-     * Set the tile size of {@link OpenGeoTile} that should be contained in the resulting {@link TileArea}
+     * Set the minimum tile size of {@link OpenGeoTile} that should be contained
+     * in the resulting {@link TileArea}
      * @param precision the precision (or minimum size) for elements of the returned TileArea
      * @return this object, to chain additional setters
      */
     public TileAreaPolygonalBuilder setPrecision(OpenGeoTile.TileSize precision) {
         this.precision = precision;
+        return this;
+    }
+
+    /**
+     * Set the maximum tile size of {@link OpenGeoTile} that should be contained
+     * in the resulting {@link TileArea}
+     * @param maximumTileSize the maximum TileSize that should be returned by this builder
+     * @return this object, to chain additional setters
+     */
+    public TileAreaPolygonalBuilder setMaximumTileSize(OpenGeoTile.TileSize maximumTileSize) {
+        this.maximumTileSize = maximumTileSize;
         return this;
     }
 
@@ -126,7 +140,12 @@ public class TileAreaPolygonalBuilder {
             return null;
         }
 
-        TileArea rasterizedArea = new MergingTileArea();
+        TileArea rasterizedArea;
+        if (maximumTileSize==null) {
+            rasterizedArea = new MergingTileArea();
+        } else {
+            rasterizedArea = new MergingTileArea(maximumTileSize);
+        }
 
         //rasterize polygon using scanlines, based on public-domain code by Darel Rex Finley, 2007;
         //http://alienryderflex.com/polygon_fill/

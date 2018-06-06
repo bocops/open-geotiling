@@ -97,6 +97,44 @@ public class PolygonalBuilderTest {
         Assert.assertTrue(testTileArea.contains(ogt));
     }
 
+    @Test
+    public void testMaximumMerge() throws Exception {
+        ArrayList<Coordinate> coords = new ArrayList<>();
+        coords.add(new Coordinate(0.9,0.9));
+        coords.add(new Coordinate(0.9,2.1));
+        coords.add(new Coordinate(2.1,2.1));
+        coords.add(new Coordinate(2.1,0.9));
+
+        //no maximum tile size, builds a TileArea with potentially GLOBAL-sized tiles
+        TileArea testTileArea = new TileAreaPolygonalBuilder()
+                .setPrecision(OpenGeoTile.TileSize.DISTRICT)
+                .setCoordinatesList(coords)
+                .build();
+        int numTilesGlobalArray = testTileArea.getCoveringTileArrayList().size();
+
+        //builds a TileArea with potentially REGION-sized tiles
+        testTileArea = new TileAreaPolygonalBuilder()
+                .setPrecision(OpenGeoTile.TileSize.DISTRICT)
+                .setMaximumTileSize(OpenGeoTile.TileSize.REGION)
+                .setCoordinatesList(coords)
+                .build();
+        int numTilesRegionArray = testTileArea.getCoveringTileArrayList().size();
+
+        //builds a TileArea with potentially DISTRICT-sized tiles
+        testTileArea = new TileAreaPolygonalBuilder()
+                .setPrecision(OpenGeoTile.TileSize.DISTRICT)
+                .setMaximumTileSize(OpenGeoTile.TileSize.DISTRICT)
+                .setCoordinatesList(coords)
+                .build();
+        int numTilesDistrictArray = testTileArea.getCoveringTileArrayList().size();
+
+        //our area contains one full REGION but no full GLOBAL tile, so we expect the first two
+        //to be of equal size, but the third one to be bigger (-1+400 = +399, to be exact)
+        Assert.assertTrue(numTilesGlobalArray == numTilesRegionArray);
+        Assert.assertTrue(numTilesRegionArray+399 == numTilesDistrictArray);
+
+    }
+
     /*
     This test currently fails! Need to define an "edge strategy" (INCLUSIVE, EXCLUSIVE, ...)
     and make sure that tiles under the polygon's vertices are included

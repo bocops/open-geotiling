@@ -19,6 +19,7 @@ public class MergingTileArea extends TileArea {
     private OpenGeoTile.TileSize smallestTileSize = OpenGeoTile.TileSize.GLOBAL;
 
     private int subtilesPerTile = MAX_SUBTILES_PER_TILE;
+    private OpenGeoTile.TileSize maxAllowedTileSize = OpenGeoTile.TileSize.GLOBAL;
 
     public MergingTileArea() {
         super();
@@ -38,6 +39,12 @@ public class MergingTileArea extends TileArea {
         }
 
         this.subtilesPerTile = subtilesPerTile;
+    }
+
+    public MergingTileArea(OpenGeoTile.TileSize maxAllowedTileSize) {
+        super();
+
+        this.maxAllowedTileSize = maxAllowedTileSize;
     }
 
     @Override
@@ -95,8 +102,13 @@ public class MergingTileArea extends TileArea {
         }
         if (tilesHashMap.containsKey(tilePrefix)) {
             ArrayList<OpenGeoTile> tiles = tilesHashMap.get(tilePrefix);
-            if (tiles.size() < subtilesPerTile -1 || tilePrefix.equals(GLOBAL_KEY)) {
-                //adding a tile means that this would still not be a complete bigger tile; add it
+            //we're NOT merging the group of tiles this newTile belongs to, if
+            // 1. the group is not complete yet
+            // 2. the group already consists of GLOBAL-sized tiles
+            // 3. the tile size already is or exceeds the maximum allowed tile size
+            if (tiles.size() < subtilesPerTile -1
+                    || tilePrefix.equals(GLOBAL_KEY)
+                    || newTile.getTileAddress().length() <= maxAllowedTileSize.getCodeLength()) {
                 tiles.add(newTile);
                 tilesHashMap.put(tilePrefix,tiles);
                 if (newTile.getTileSize().getCodeLength()>smallestTileSize.getCodeLength()) {
