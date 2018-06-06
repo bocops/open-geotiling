@@ -272,6 +272,19 @@ public class OpenGeoTile {
     }
 
     /**
+     * The prefix of a tile address is the address of the next biggest tile at this location.
+     * @return this tile's address with the final two characters removed. In case of a GLOBAL tile,
+     * returns the empty string.
+     */
+    public String getTileAddressPrefix() {
+        if (mTileSize == TileSize.GLOBAL) {
+            return "";
+        } else {
+            return getTileAddress().substring(0,mTileSize.getCodeLength()-2);
+        }
+    }
+
+    /**
      * The full {@link com.google.openlocationcode.OpenLocationCode} for this tile. Other than
      * {@link #getWrappedOpenLocationCode()}, this will return a full plus code for the whole tile.
      * @return a plus code for the whole tile, probably padded with '0' characters

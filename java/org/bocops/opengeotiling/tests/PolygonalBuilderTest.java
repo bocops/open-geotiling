@@ -11,7 +11,7 @@ public class PolygonalBuilderTest {
     public void testNullPolygon() throws Exception {
         //not setting a polygon results in null tileArea
         TileArea testTileArea = new TileAreaPolygonalBuilder()
-                .setTileSize(OpenGeoTile.TileSize.NEIGHBORHOOD)
+                .setPrecision(OpenGeoTile.TileSize.NEIGHBORHOOD)
                 .build();
         Assert.assertTrue(testTileArea==null);
     }
@@ -25,7 +25,7 @@ public class PolygonalBuilderTest {
         coords.add(new Coordinate(500.0, 500.0)); //invalid, will be removed
 
         TileArea testTileArea = new TileAreaPolygonalBuilder()
-                .setTileSize(OpenGeoTile.TileSize.NEIGHBORHOOD)
+                .setPrecision(OpenGeoTile.TileSize.NEIGHBORHOOD)
                 .setCoordinatesList(coords)
                 .build();
         Assert.assertTrue(testTileArea==null);
@@ -48,7 +48,7 @@ public class PolygonalBuilderTest {
         OpenGeoTile center = new OpenGeoTile(0.5,0.5, OpenGeoTile.TileSize.NEIGHBORHOOD);
 
         TileArea testTileArea = new TileAreaPolygonalBuilder()
-                .setTileSize(OpenGeoTile.TileSize.DISTRICT)
+                .setPrecision(OpenGeoTile.TileSize.DISTRICT)
                 .setCoordinatesList(coords)
                 .build();
         Assert.assertFalse(testTileArea==null);
@@ -58,6 +58,24 @@ public class PolygonalBuilderTest {
         Assert.assertTrue("Contains area near corner 3",testTileArea.contains(corner3));
         Assert.assertTrue("Contains area near corner 4",testTileArea.contains(corner4));
         Assert.assertTrue("Contains center",  testTileArea.contains(center));
+    }
+
+    @Test
+    public void testValidLargePolygon() throws Exception {
+        //defining a very large area of 10x10x20x20 = 40K small tiles, which could also
+        //be represented by a small number of larger tiles (10x10 = 100 REGION-sized tiles);
+        //this test should finish in an acceptable time
+        ArrayList<Coordinate> coords = new ArrayList<>();
+        coords.add(new Coordinate(0.0,0.0));
+        coords.add(new Coordinate(0.0,10.0));
+        coords.add(new Coordinate(10.0,10.0));
+        coords.add(new Coordinate(10.0,0.0));
+
+        TileArea testTileArea = new TileAreaPolygonalBuilder()
+                .setPrecision(OpenGeoTile.TileSize.DISTRICT)
+                .setCoordinatesList(coords)
+                .build();
+        Assert.assertFalse(testTileArea==null);
     }
 
     @Test
@@ -71,7 +89,7 @@ public class PolygonalBuilderTest {
         OpenGeoTile ogt = new OpenGeoTile(0.5,0.5, OpenGeoTile.TileSize.NEIGHBORHOOD);
 
         TileArea testTileArea = new TileAreaPolygonalBuilder()
-                .setTileSize(OpenGeoTile.TileSize.DISTRICT)
+                .setPrecision(OpenGeoTile.TileSize.DISTRICT)
                 .setCoordinatesList(coords)
                 .build();
         Assert.assertFalse(testTileArea==null);
@@ -82,7 +100,7 @@ public class PolygonalBuilderTest {
     /*
     This test currently fails! Need to define an "edge strategy" (INCLUSIVE, EXCLUSIVE, ...)
     and make sure that tiles under the polygon's vertices are included
-    
+
     @Test
     public void testValidPolygonSquareCorners() throws Exception {
         ArrayList<Coordinate> coords = new ArrayList<>();
@@ -98,7 +116,7 @@ public class PolygonalBuilderTest {
         OpenGeoTile center = new OpenGeoTile(0.5,0.5, OpenGeoTile.TileSize.NEIGHBORHOOD);
 
         TileArea testTileArea = new TileAreaPolygonalBuilder()
-                .setTileSize(OpenGeoTile.TileSize.DISTRICT)
+                .setPrecision(OpenGeoTile.TileSize.DISTRICT)
                 .setCoordinatesList(coords)
                 .build();
         Assert.assertFalse(testTileArea==null);

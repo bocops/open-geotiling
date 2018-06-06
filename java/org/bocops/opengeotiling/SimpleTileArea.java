@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 /**
  * Simplest implementation of {@link TileArea} possible. This just collects all tiles that are added
- * to it, but does not promise cleaning up its internal collection (for example by merging tiles,
+ * to it, but does not clean up its internal collection (for example by merging tiles,
  * by removing smaller tiles when a larger, encompassing one is added) or by managing territory
  * beyond its individual, potentially non-contiguous tiles.
  */

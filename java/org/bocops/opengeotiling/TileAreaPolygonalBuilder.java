@@ -8,9 +8,9 @@ import java.util.ArrayList;
  *
  * To create a TileArea:
  * ArrayList<Coordinate> coordinates = ...; // list of coordinates goes here
- * OpenGeoTile.TileSize tileSize = ...;     // precision of resulting area
+ * OpenGeoTile.TileSize precision = ...;     // precision of resulting area
  * TileArea area = new TileAreaPolygonalBuilder()
- *         .setTileSize(tileSize)
+ *         .setPrecision(precision)
  *         .setCoordinatesList(coordinates)
  *         .build();
  *
@@ -29,7 +29,7 @@ public class TileAreaPolygonalBuilder {
     private static final double LONGITUDE_MAX =  180.0;
 
     //internal state, updated by set* methods
-    private OpenGeoTile.TileSize tileSize = OpenGeoTile.TileSize.DISTRICT;
+    private OpenGeoTile.TileSize precision = OpenGeoTile.TileSize.DISTRICT;
     private ArrayList<Coordinate> coordinates = null;
     private Coordinate bboxMin, bboxMax;
 
@@ -39,11 +39,11 @@ public class TileAreaPolygonalBuilder {
 
     /**
      * Set the tile size of {@link OpenGeoTile} that should be contained in the resulting {@link TileArea}
-     * @param tileSize the minimum size (or maximum precision) for elements of the returned TileArea
+     * @param precision the precision (or minimum size) for elements of the returned TileArea
      * @return this object, to chain additional setters
      */
-    public TileAreaPolygonalBuilder setTileSize(OpenGeoTile.TileSize tileSize) {
-        this.tileSize = tileSize;
+    public TileAreaPolygonalBuilder setPrecision(OpenGeoTile.TileSize precision) {
+        this.precision = precision;
         return this;
     }
 
@@ -101,7 +101,7 @@ public class TileAreaPolygonalBuilder {
             return false;
         }
 
-        if (tileSize == null) {
+        if (precision == null) {
             //tile size hasn't been set
             return false;
         }
@@ -126,18 +126,18 @@ public class TileAreaPolygonalBuilder {
             return null;
         }
 
-        TileArea rasterizedArea = new SimpleTileArea();
+        TileArea rasterizedArea = new MergingTileArea();
 
         //rasterize polygon using scanlines, based on public-domain code by Darel Rex Finley, 2007;
         //http://alienryderflex.com/polygon_fill/
 
-        double increment = tileSize.getCoordinateIncrement();
+        double increment = precision.getCoordinateIncrement();
 
         //determine min and max latitude/longitude we want to use
         //go through OGT to retrieve center coordinates, pad by one increment to not exclude
         //border tiles in some situations
-        OpenGeoTile minOGT = new OpenGeoTile(bboxMin.latitude(), bboxMin.longitude(),tileSize);
-        OpenGeoTile maxOGT = new OpenGeoTile(bboxMax.latitude(), bboxMax.longitude(),tileSize);
+        OpenGeoTile minOGT = new OpenGeoTile(bboxMin.latitude(), bboxMin.longitude(), precision);
+        OpenGeoTile maxOGT = new OpenGeoTile(bboxMax.latitude(), bboxMax.longitude(), precision);
         double minLatitude =
                 minOGT.getWrappedOpenLocationCode().decode().getCenterLatitude() - increment;
         double maxLatitude =
@@ -206,7 +206,7 @@ public class TileAreaPolygonalBuilder {
                     for (double longitude = intersectionLongitudes[i];
                          longitude<intersectionLongitudes[i+1];longitude+=increment) {
                         //latitude and longitude define a tile inside the polygon; add that to area
-                        OpenGeoTile ogt = new OpenGeoTile(latitude,longitude,tileSize);
+                        OpenGeoTile ogt = new OpenGeoTile(latitude,longitude, precision);
                         rasterizedArea.addTile(ogt);
                     }
                 }
