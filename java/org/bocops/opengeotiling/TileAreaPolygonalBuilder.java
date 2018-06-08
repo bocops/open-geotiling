@@ -194,7 +194,7 @@ public class TileAreaPolygonalBuilder {
 
             //Sort the intersection longitudes via a simple bubble sort.
             int i = 0;
-            while (i<nextIndex-2) { //nextIndex is the first index not filled with valid data, so we need to iterate up to this -2
+            while (i<=nextIndex-2) { //nextIndex is the first index not filled with valid data, so we need to iterate up to this -2
                 if (intersectionLongitudes[i]>intersectionLongitudes[i+1]) {
                     double swap = intersectionLongitudes[i];
                     intersectionLongitudes[i] = intersectionLongitudes[i+1];

@@ -135,6 +135,72 @@ public class PolygonalBuilderTest {
 
     }
 
+    @Test
+    public void testSquarePolygonStartingPoint() throws Exception {
+        //starting from a polygon with vertices A, B, C, D, the same area should be returned whether
+        //starting from A or C (using opposite corners of a square polygon tests all combinations of
+        //lat/lng, hi/low starting points.
+
+        double latLow = 0.0;
+        double latHi  = 0.1;
+        double lngLow = 0.0;
+        double lngHi  = 0.1;
+
+        Coordinate a = new Coordinate(latLow, lngLow);
+        Coordinate b = new Coordinate(latHi,  lngLow);
+        Coordinate c = new Coordinate(latHi,  lngHi);
+        Coordinate d = new Coordinate(latLow, lngHi);
+
+        ArrayList<Coordinate> coordsStartinglngLow = new ArrayList<>();
+        coordsStartinglngLow.add(a);
+        coordsStartinglngLow.add(b);
+        coordsStartinglngLow.add(c);
+        coordsStartinglngLow.add(d);
+
+        ArrayList<Coordinate> coordsStartinglngHi = new ArrayList<>();
+        coordsStartinglngHi.add(c);
+        coordsStartinglngHi.add(d);
+        coordsStartinglngHi.add(a);
+        coordsStartinglngHi.add(b);
+
+        //count tiles in first area
+        TileArea testTileArea = new TileAreaPolygonalBuilder()
+                .setPrecision(OpenGeoTile.TileSize.NEIGHBORHOOD)
+                .setCoordinatesList(coordsStartinglngLow)
+                .build();
+        Assert.assertFalse(testTileArea==null);
+
+        int numNeighborhoodTilesLow = 0;
+        int numOtherTilesLow = 0;
+        for (OpenGeoTile ogt : testTileArea.getCoveringTileArrayList()) {
+            if (ogt.getTileSize().equals(OpenGeoTile.TileSize.NEIGHBORHOOD)) {
+                numNeighborhoodTilesLow++;
+            } else {
+                numOtherTilesLow++;
+            }
+        }
+
+        //count tiles in second area
+        testTileArea = new TileAreaPolygonalBuilder()
+                .setPrecision(OpenGeoTile.TileSize.NEIGHBORHOOD)
+                .setCoordinatesList(coordsStartinglngHi)
+                .build();
+        Assert.assertFalse(testTileArea==null);
+
+        int numNeighborhoodTilesHi = 0;
+        int numOtherTilesHi = 0;
+        for (OpenGeoTile ogt : testTileArea.getCoveringTileArrayList()) {
+            if (ogt.getTileSize().equals(OpenGeoTile.TileSize.NEIGHBORHOOD)) {
+                numNeighborhoodTilesHi++;
+            } else {
+                numOtherTilesHi++;
+            }
+        }
+
+        Assert.assertTrue(numNeighborhoodTilesLow == numNeighborhoodTilesHi);
+        Assert.assertTrue(numOtherTilesLow == numOtherTilesHi);
+    }
+
     /*
     This test currently fails! Need to define an "edge strategy" (INCLUSIVE, EXCLUSIVE, ...)
     and make sure that tiles under the polygon's vertices are included
